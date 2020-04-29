@@ -15,78 +15,6 @@ def start_graphics():
     screen = pygame.display.set_mode((screen_width,screen_height)) 
     jelly_sprite_image = pygame.image.load(DIR_JELLY_IMAGE)
     
-
-def execute_order_jelly(jelly,translated_response):
-    
-    average_attributes_jelly = (jelly.happiness + jelly.health + jelly.nutrition) // 3
-    
-    if translated_response == 'sell-horses':
-        sell_horses_permission = average_attributes_jelly
-        if jelly.horses >= sell_horses_permission:
-            jelly.golds += (sell_horses_permission * sell_price_horse)
-            jelly.horses -= sell_horses_permission
-        else:
-           jelly.golds += (jelly.horses * sell_price_horse)
-           jelly.horses = 0
-           
-        jelly.posx = (sell_horses_place_posx + jelly_width // 2)
-        jelly.posy = (sell_horses_place_posy + randint(0,70) + jelly_height // 2)  
-        
-    elif translated_response == 'buy-horses':
-        buy_horses_permission = average_attributes_jelly
-
-        if jelly.golds >= (buy_horses_permission * buy_price_horse):
-           jelly.horses += buy_horses_permission
-           jelly.golds -= (buy_horses_permission * buy_price_horse)
-        else:
-           jelly.horses += (jelly.golds // buy_price_horse)
-           jelly.golds -= (jelly.golds // buy_price_horse) * buy_price_horse
-           
-        jelly.posx = (buy_horses_place_posx + randint(0,40) + jelly_width // 2)
-        jelly.posy = (buy_horses_place_posy + randint(0,40) + jelly_height // 2)
-        
-    elif translated_response == 'buy-nutrition':
-        buy_nutrition_permission = 100.0 - jelly.nutrition
-
-        if jelly.golds >= (buy_nutrition_permission * buy_price_unit_nutrition):
-            jelly.nutrition += buy_nutrition_permission
-            jelly.golds -= (buy_nutrition_permission * buy_price_unit_nutrition)
-
-        else:
-            jelly.nutrition += jelly.golds // buy_price_unit_nutrition
-            jelly.golds -= (jelly.golds // buy_price_unit_nutrition) * buy_price_unit_nutrition
-
-            
-        jelly.posx = (nutrition_place_posx + randint(0,40) + jelly_width // 2)
-        jelly.posy = (nutrition_place_posy + randint(0,40) + jelly_height // 2)
-        
-    elif translated_response == 'buy-health':
-        buy_health_permission = 100.0 - jelly.health
-
-        if jelly.golds >= (buy_health_permission * buy_price_unit_health):
-            jelly.health += buy_health_permission
-            jelly.golds -= (buy_health_permission * buy_price_unit_health)
-
-        else:
-            jelly.health += jelly.golds // buy_price_unit_health
-            jelly.golds -= (jelly.golds // buy_price_unit_health) * buy_price_unit_health
-            
-        jelly.posx = (health_place_posx + randint(0,40) + jelly_width // 2)
-        jelly.posy = (health_place_posy + randint(0,40) + jelly_height // 2)
-        
-    elif translated_response == 'buy-happiness':
-        buy_happiness_permission = 100.0 - jelly.happiness
-        
-        if jelly.golds >= (buy_happiness_permission * buy_price_unit_happiness):
-            jelly.happiness += buy_happiness_permission
-            jelly.golds -= (buy_happiness_permission * buy_price_unit_happiness)
-        else:
-            jelly.happiness += jelly.golds // buy_price_unit_happiness
-            jelly.golds -= (jelly.golds // buy_price_unit_happiness) * buy_price_unit_happiness   
-
-        jelly.posx = (happiness_place_posx + randint(0,40) + jelly_width // 2)
-        jelly.posy = (happiness_place_posy + randint(0,40) + jelly_height // 2)
-
 def draw_graphics_evolve(ga,generation,year,fitness_best_jelly_of_generation,average_fitness):
     global screen,jelly_sprite_image,mutation_rate,size_population,fitness_goal,elitism
     
@@ -157,7 +85,7 @@ def draw_graphics_evolve(ga,generation,year,fitness_best_jelly_of_generation,ave
     pygame.display.update() 
 
 
-def draw_graphics_test(jelly,generation,year):
+def draw_graphics_test(jelly,year):
     global screen
     
     screen.fill(bg_color)
@@ -170,9 +98,6 @@ def draw_graphics_test(jelly,generation,year):
     
 
     font = pygame.font.SysFont("arial",16)
-
-    hud_generation = font.render("Generation: %d"%generation,True,(255,255,255))
-    screen.blit(hud_generation,(10 , screen_height // 4))
     
     hud_year = font.render("Year: %d"%year,True,(255,255,255))
     screen.blit(hud_year,(10 , screen_height // 4 + 20))
@@ -218,19 +143,19 @@ def draw_graphics_test(jelly,generation,year):
     jelly.draw(screen,jelly_sprite_image)
     pygame.display.update()
     
-def update_evolve(ga):
+def update_evolve(ga,current_year):
     global decrement_happiness,decrement_health,decrement_nutrition
     for i in range(len(ga.population)):
         ga.population[i].happiness = max(0, ga.population[i].happiness - decrement_happiness)
         ga.population[i].health = max(0, ga.population[i].health - decrement_health)
         ga.population[i].nutrition = max(0, ga.population[i].nutrition - decrement_nutrition)
      
-        response = ga.population[i].get_and_translate_jelly_response()
+        response = ga.population[i].get_and_translate_jelly_response(current_year)
         # print(response,id(ga.population[i]))
-        execute_order_jelly(ga.population[i],response)
+        ga.population[i].execute_order_jelly(response)
         #print("GOLDS:",ga.population[i].golds ,"HORSES:",ga.population[i].horses )
         
-def update_test(jelly):
+def update_test(jelly,current_year):
     global decrement_happiness,decrement_health,decrement_nutrition
     
     jelly.happiness = max(0, jelly.happiness - decrement_happiness)
@@ -238,8 +163,8 @@ def update_test(jelly):
     jelly.nutrition = max(0, jelly.nutrition - decrement_nutrition)
 
      
-    response = jelly.get_and_translate_jelly_response()
-    execute_order_jelly(jelly,response)
+    response = jelly.get_and_translate_jelly_response(current_year)
+    jelly.execute_order_jelly(response)
     
     print("\nRESPONSE JELLY:",response)
     print("JELLY GOLDS:",jelly.golds,"JELLY HORSES:",jelly.horses,"JELLY HERITAGE (FITNESS):",jelly.fitness())
@@ -255,14 +180,14 @@ def calculate_economy_amount(ga):
         
     return economy_amount
 
-def save_best_dna(generation,dna):
-    filename = "./bests_dnas/best_dna" + str(generation) + ".db"
+def save_best_dna(dna):
+    filename = "best_dna.db"
     db = shelve.open(filename)
     db["dna"] = dna
     db.close()
     
-def load_best_dna_saved(generation):
-    filename = "./bests_dnas/best_dna" + str(generation) + ".db"
+def load_best_dna_saved():
+    filename = "best_dna.db"
     db = shelve.open(filename)
     dna = db["dna"]
     db.close()    
