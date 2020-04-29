@@ -67,10 +67,10 @@ bg_color_happiness_place = (100,0,100)
 #logics
 
 elitism = True
-size_population = 100
-mutation_rate = 0.1
-years = 40
-fitness_goal = 150000
+size_population = 1000
+mutation_rate = 0.01
+years = 100
+fitness_goal = 1500000
 
 
 initial_golds_jellys = 1000
@@ -79,7 +79,6 @@ initial_happiness_jellys = 50
 initial_health_jellys = 80
 initial_nutrition_jellys = 20
 
-brain_structure_jellys = [5,10,10,5]
 
 decrement_happiness = 7
 decrement_health = 8
